@@ -1,0 +1,36 @@
+# Mongo con docker
+sudo docker run -it --name monguito -d mongo
+sudo docker run -it --link monguito:mongo --rm mongo sh -c 'exec mongo "$MONGO_PORT_27017_TCP_ADDR:$MONGO_PORT_27017_TCP_PORT/test"'
+
+# Casssandra con docker
+sudo docker pull cassandra
+sudo docker run -it --name mikasa -p 9042:9042 -d cassandra
+sudo docker run -it --link mikasa:cassandra --rm cassandra sh -c 'exec cqlsh "$CASSANDRA_PORT_9042_TCP_ADDR"'
+
+# Elastic con docker
+sudo docker pull elasticsearch
+sudo docker run --name=elastic -p 9200:9200 elasticsearch
+sudo docker run --name=elastic -p 9200:9200 -e "http.host=0.0.0.0" -e "transport.host=127.0.0.1" -e "xpack.security.enabled=false" -e "network.bind_host=0.0.0.0" elasticsearch
+
+# HDFS con docker
+sudo docker pull sequenceiq/hadoop-docker
+sudo docker run -it --name=hdfs -p 50070:50070 -p 50075:50075 sequenceiq/hadoop-docker:latest /etc/bootstrap.sh -bash
+cd $HADOOP_PREFIX
+bin/hdfs dfs -mkdir /test 
+echo "hola" >> archivo.txt
+bin/hdfs dfs -put archivo.txt /test/archivo.txt
+bin/hdfs dfs -ls /
+
+# Kafka con docker
+sudo docker pull spotify/kafka
+sudo docker run --name=kafkita -p 2181:2181 -p 9092:9092 --env ADVERTISED_HOST=localhost --env ADVERTISED_PORT=9092 spotify/kafka
+
+sudo docker exec -it kafkita bash
+sudo docker exec kafkita /opt/kafka_2.11-0.10.1.0/bin/kafka-topics.sh --create --zookeeper 10.110.70.45:2181 --replication-factor 1 --partitions 1 --topic topico
+sudo docker exec kafkita /opt/kafka_2.11-0.10.1.0/bin/kafka-topics.sh --list --zookeeper 10.110.70.45:2181
+sudo docker exec kafkita /opt/kafka_2.11-0.10.1.0/bin/kafka-console-consumer.sh --zookeeper 10.110.70.45:2181 --topic topico --from-beginning
+
+ 2122/tcp, 8030-8033/tcp, 8040/tcp, 8042/tcp, 8088/tcp, 19888/tcp, 49707/tcp, 50010/tcp, 0.0.0.0:50070->50070/tcp, 50020/tcp, 50090/tcp, 0.0.0.0:50075->50075/tcp   hdfs
+ad2dc6343a19        spotify/kafka                     "supervisord -n"         8 hours ago         Up 8 hours          0.0.0.0:2181->2181/tcp, 0.0.0.0:9092->9092/tcp      
+
+

@@ -1,0 +1,73 @@
+# Habilitar
+vi $HADOOP_PREFIX/etc/hadoop/hdfs-site.xml 
+
+<property>
+<name>dfs.namenode.acls.enabled</name>
+<value>true</value>
+</property>
+
+# Reiniciar Servicio Namenode
+/usr/local/hadoop/sbin/stop-all.sh
+/usr/local/hadoop/sbin/start-all.sh
+
+#crear grupo y usuario en docker
+groupadd animals
+useradd -g animals leon
+su leon
+
+# Crear carpeta usuario y asignar permisos
+$HADOOP_PREFIX/bin/hdfs dfs -mkdir /user/leon
+$HADOOP_PREFIX/bin/hdfs dfs -chown leon /user/leon 
+$HADOOP_PREFIX/bin/hdfs dfs -chgrp animals /user/leon 
+
+$HADOOP_PREFIX/bin/hdfs dfs -touchz /user/leon/test1.txt
+echo 'test' | $HADOOP_PREFIX/bin/hdfs dfs -put - /user/leon/test2.txt
+echo 'test' | $HADOOP_PREFIX/bin/hdfs dfs -appendToFile - /user/leon/test1.txt
+$HADOOP_PREFIX/bin/hdfs dfs -cat /user/leon/test1.txt
+
+# ACL
+# Como root
+$HADOOP_PREFIX/bin/hdfs dfs -mkdir /user/leon/acl
+echo "hola ACL" | $HADOOP_PREFIX/bin/hdfs dfs -put - /user/leon/acl/acl.txt
+$HADOOP_PREFIX/bin/hdfs dfs -setfacl -m user:leon:rw- /user/leon/acl/acl.txt
+
+# Verifica los permisos de un archivo
+$HADOOP_PREFIX/bin/hdfs dfs -getfacl /user/leon/acl/acl.txt
+# Crea permisos 
+$HADOOP_PREFIX/bin/hdfs dfs -setfacl -m user:leon:rw- /user/leon/acl/acl.txt
+# Elimina permisos
+$HADOOP_PREFIX/bin/hdfs dfs -setfacl -x leon /user/leon/acl/acl.txt
+$HADOOP_PREFIX/bin/hdfs dfs -setfacl -R -b /user/leon/acl/acl.txt  -- para todo
+$HADOOP_PREFIX/bin/hdfs dfs -getfacl archivo1 | setfacl --set-file=- archivo2   -- copiar reglas para otro archivo
+
+$HADOOP_PREFIX/bin/hdfs dfs -ls  /user/leon/twiiter | grep '.*karl.*'  -- expresiones regulares
+$HADOOP_PREFIX/bin/hdfs dfs -chmod -R 664 /user/leon/twitter
+
+bash-4.1# $HADOOP_PREFIX/bin/hdfs dfs -ls /user/leon/twitter | wc -l --cantidad de archivos
+
+$HADOOP_PREFIX/bin/hdfs dfs -cat /user/leon/twitter/* | grep hola
+
+
+
+ls <path>                Muestra el contenido de un directorio 
+lsr <path>               Muestra las entradas de forma recursiva todos los subdirectorios de la ruta.
+du <path>                Muestra uso de disco, en bytes, de todos los archivos que coincidirá con la ruta.
+dus <path>               Imprime un resumen del uso del disco de todos los archivos/directorios de la ruta.
+mv <src><dest>           Mueve el archivo o directorio indicado por src a dest, en HDFS.
+cp <src><dest>           Copia el archivo o directorio identificado por src a dest, en HDFS. 	
+rm <path>                Elimina el archivo o directorio vacío identificado con la ruta de acceso.
+rmr <path>               Forma recursiva elimina todas las entradas secundarias.
+put <localSrc><dest>     Copia el archivo o directorio del sistema de archivos local identificado por localSrc al dest en el SLE.
+copyFromLocal <localSrc><dest>
+moveFromLocal <localSrc> <dest> Copia el archivo o directorio del sistema al dest en HDFS, y elimina la copia local en el éxito. 	
+cat <filen-ame> Muestra el contenido del archivo en stdout.
+mkdir <path> Creates a directory named path in HDFS.
+touchz <path> Crea un archivo.
+stat [format] <path> Imprime la información acerca de camino. 
+tail [-f] <file2name> Muestra el último archivo de 1KB en stdout.
+chmod [-R] mode,mode,... <path>...
+Cambia los permisos de archivo asociado con uno o más objetos identificados en la ruta.
+chown [-R] [owner][:[group]] <path> Establece el grupo de un archivo o directorio identificados por la ruta.
+chgrp [-R] group <path> Establece el grupo propietario de los archivos o directorios.
+help <cmd-name> Devuelve información sobre el uso de uno de los comandos listados anteriormente. 
+
